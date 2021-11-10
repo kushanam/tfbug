@@ -11,5 +11,14 @@ python -u tf_test.py
 ```
 you should get segmentation fault which is an indication of the desscribed issue.
 
+The line resulting in the segmentation fault is in the tf_test.py:90:
+
+```test_copy_to_gpu_gen(process_on='cpu', target_device='/cpu:0')```
+
+This basically runs a pipeline within which the `from_generator` gpu op is utilized to showcase a device dataset op, however the input data is expected to be on the cpu since it is registered as the host memory (poc_dataset_op.cc:231). Next within the poc_dataset_op.cc:175 we try to modify the input as CPU memory. Here is where we get the segfault as the memory has already been copied to the device.
+If we modify a the GPU memory instead, everything looks correct (tf_test.py:91)
+
+
+
 
 
